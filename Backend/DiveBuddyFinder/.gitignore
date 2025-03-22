@@ -1,0 +1,44 @@
+# User-specific files
+*.user
+*.suo
+*.sln.docstates
+
+# Build results
+bin/
+obj/
+publish/
+*.csproj.user
+*.sln.cache
+
+# Package caches
+packages/
+*.nupkg
+*.vspscc
+
+# Visual Studio code files
+.vscode/
+
+# Configuration files (sensitive data)
+appsettings.json
+appsettings.Development.json
+*.config
+*.secrets.json # If you use .NET secrets.json
+*.pfx # Certificates
+
+# Database files
+*.mdf
+*.ldf
+*.sqlite
+*.db
+
+# Temporary files
+*.tmp
+*.log
+
+# Other files you might want to ignore
+*.swp # Vim swap files
+*.bak # Backup files
+*.DS_Store # macOS folder metadata
+Thumbs.db # Windows thumbnail cache
+*.ipch # Intellisense files
+*.resharper.* # Resharper files
