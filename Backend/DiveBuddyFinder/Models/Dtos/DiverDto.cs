@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace DiveBuddyFinder.Models {
-    public class Diver {
+namespace DiveBuddyFinder.Models.Dtos {
+    public class DiverDto {
         public Guid id {get; set;}
         
         [Required]
@@ -30,15 +30,12 @@ namespace DiveBuddyFinder.Models {
         public Guid LocationId {get; set;}
 
         [Required]
-        public Location Location {get; set;}
+        public DateTime LastActive {get; set;}
 
         public string Role {get; set;} = "User";
-
-        [Required]
-        public DateTime LastActive {get; set;}
         
         [Required]
-        public List<Certificates> Certificates {get; set;}
+        public List<CertificateDto> Certificates {get; set;}
 
     }
 }

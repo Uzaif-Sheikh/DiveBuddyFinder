@@ -16,14 +16,14 @@ namespace DiveBuddyFinder.Controllers {
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Diver>>> getDivers() {
+        public async Task<ActionResult<IEnumerable<Diver>>> GetDivers() {
             
             var divers = await _DbContext.divers.ToListAsync();
             return divers;
         }
 
         [HttpGet("{id}")]
-        public async Task<ActionResult<Diver>> getDiver(Guid id) {
+        public async Task<ActionResult<Diver>> GetDiverById(Guid id) {
 
             var diver = await _DbContext.divers.FindAsync(id);
             if(diver == null) {
@@ -44,11 +44,10 @@ namespace DiveBuddyFinder.Controllers {
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> updateDiver(Guid id, Diver updateDiver) {
+        public async Task<IActionResult> updateDiver(Guid id, [FromHeader] string Token, Diver updateDiver) {
             
             var diver = await _DbContext.divers.FindAsync(id);
             if(diver == null) return NoContent();
-
 
             await _DbContext.SaveChangesAsync();
             return NoContent();
@@ -56,7 +55,7 @@ namespace DiveBuddyFinder.Controllers {
         }
         
         [HttpDelete("{id}")]
-        public async Task<IActionResult> deleteDiver(Guid id) {
+        public async Task<IActionResult> deleteDiver(Guid id, [FromHeader] string Token) {
 
             var diver = await _DbContext.divers.FindAsync(id);
 
