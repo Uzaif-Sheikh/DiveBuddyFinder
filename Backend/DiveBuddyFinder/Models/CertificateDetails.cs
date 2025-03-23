@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DiveBuddyFinder.Models {
     public class CertificateDetails {
-        public Guid id {get; set;}
+        public Guid Id {get; set;}
         
         [Required]
         public string Name {get; set;}
@@ -11,7 +11,7 @@ namespace DiveBuddyFinder.Models {
 
         public string Url {get; set;}
 
-        public List<Certificates> Certificates {get; set;}    
+        public List<Certificates> Certificates {get; set;}
 
     }
 }

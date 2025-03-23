@@ -1,5 +1,6 @@
 using DiveBuddyFinder.Data;
 using DiveBuddyFinder.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,14 +19,14 @@ namespace DiveBuddyFinder.Controllers {
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Diver>>> GetDivers() {
             
-            var divers = await _DbContext.divers.ToListAsync();
+            var divers = await _DbContext.Divers.ToListAsync();
             return divers;
         }
 
         [HttpGet("{id}")]
         public async Task<ActionResult<Diver>> GetDiverById(Guid id) {
 
-            var diver = await _DbContext.divers.FindAsync(id);
+            var diver = await _DbContext.Divers.FindAsync(id);
             if(diver == null) {
                 return NotFound();
             }
@@ -34,9 +35,10 @@ namespace DiveBuddyFinder.Controllers {
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<ActionResult<Diver>> createDiver(Diver createDiver) {
 
-            _DbContext.divers.Add(createDiver);
+            _DbContext.Divers.Add(createDiver);
             await _DbContext.SaveChangesAsync();
 
             return Ok(createDiver);
@@ -44,9 +46,10 @@ namespace DiveBuddyFinder.Controllers {
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> updateDiver(Guid id, [FromHeader] string Token, Diver updateDiver) {
+        [Authorize]
+        public async Task<IActionResult> updateDiver(Guid id, Diver updateDiver) {
             
-            var diver = await _DbContext.divers.FindAsync(id);
+            var diver = await _DbContext.Divers.FindAsync(id);
             if(diver == null) return NoContent();
 
             await _DbContext.SaveChangesAsync();
@@ -55,15 +58,16 @@ namespace DiveBuddyFinder.Controllers {
         }
         
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> deleteDiver(Guid id, [FromHeader] string Token) {
 
-            var diver = await _DbContext.divers.FindAsync(id);
+            var diver = await _DbContext.Divers.FindAsync(id);
 
             if(diver == null){
                 return NotFound();
             }
 
-            _DbContext.divers.Remove(diver);
+            _DbContext.Divers.Remove(diver);
             await _DbContext.SaveChangesAsync();
 
             return NoContent();

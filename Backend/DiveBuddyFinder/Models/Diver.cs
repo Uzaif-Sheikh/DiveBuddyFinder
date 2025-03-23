@@ -2,8 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace DiveBuddyFinder.Models {
     public class Diver {
-        public Guid id {get; set;}
-        
+        public Guid UserId {get; set;}
+
+        public User User {get; set;}
+
         [Required]
         [StringLength(16, ErrorMessage = "Maximum length for first name is 16.")]
         public string FirstName {get; set;}
@@ -12,15 +14,11 @@ namespace DiveBuddyFinder.Models {
         public string? LastName {get; set;}
 
         [Required]
-        public string Email {get; set;}
-
-        [Required]
-        public string Password {get; set;}
-
-        [Required]
         public int NumberOfDives {get; set;}
 
         public string? Bio {get; set;}
+
+        public string? Image {get; set;}
 
         [Required]
         [Range(18, 90, ErrorMessage = "Age Should be between the range 18 - 90.")]
@@ -32,7 +30,6 @@ namespace DiveBuddyFinder.Models {
         [Required]
         public Location Location {get; set;}
 
-        public string Role {get; set;} = "User";
 
         [Required]
         public DateTime LastActive {get; set;}
