@@ -16,7 +16,7 @@ namespace DiveBuddyFinder.Controllers {
             _DbContext = applicationDbContext;
         }
 
-        [HttpGet]
+        [HttpGet("GetDivers")]
         public async Task<ActionResult<IEnumerable<Diver>>> GetDivers() {
             
             var divers = await _DbContext.Divers.ToListAsync();
