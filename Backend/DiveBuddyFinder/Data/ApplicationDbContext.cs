@@ -30,6 +30,9 @@ namespace DiveBuddyFinder.Data {
                         .HasOne(d => d.User)
                         .WithOne(d => d.Diver)
                         .HasForeignKey<Diver>(d => d.UserId);
+            
+            modelBuilder.Entity<Location>()
+                        .HasKey(l => l.PostCode);
                         
         }
     }

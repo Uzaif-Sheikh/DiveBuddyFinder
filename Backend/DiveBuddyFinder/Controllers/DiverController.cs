@@ -1,5 +1,8 @@
+using AutoMapper;
 using DiveBuddyFinder.Data;
 using DiveBuddyFinder.Models;
+using DiveBuddyFinder.Models.Dtos.DiverDto;
+using DiveBuddyFinder.Models.Dtos.Views;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,60 +14,69 @@ namespace DiveBuddyFinder.Controllers {
     public class DiverController : ControllerBase {
 
         public readonly ApplicationDbContext _DbContext;
+        public readonly IMapper _mapper;
 
-        public DiverController(ApplicationDbContext applicationDbContext) {
+        public DiverController(ApplicationDbContext applicationDbContext, IMapper mapper) {
             _DbContext = applicationDbContext;
+            _mapper = mapper;
         }
 
         [HttpGet("GetDivers")]
-        public async Task<ActionResult<IEnumerable<Diver>>> GetDivers() {
+        public async Task<ActionResult<IEnumerable<DiverDto>>> GetDivers() {
             
             var divers = await _DbContext.Divers.ToListAsync();
-            return divers;
+            return Ok(divers.Select(d => _mapper.Map<DiverDto>(d)));
         }
 
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Diver>> GetDiverById(Guid id) {
+        [HttpGet("GetDiverById/{id}")]
+        public async Task<ActionResult<DiverDto>> GetDiverById(Guid id) {
 
             var diver = await _DbContext.Divers.FindAsync(id);
             if(diver == null) {
                 return NotFound();
             }
 
-            return Ok(diver);
+            return Ok(_mapper.Map<DiverDto>(diver));
         }
 
-        [HttpPost]
+        [HttpPost("Create")]
         [Authorize]
-        public async Task<ActionResult<Diver>> createDiver(Diver createDiver) {
+        public async Task<ActionResult<DiverDto>> createDiver(CreateDiverDto createDiver) {
 
-            _DbContext.Divers.Add(createDiver);
+            var diver = _mapper.Map<Diver>(createDiver);
+            _DbContext.Divers.Add(diver);
             await _DbContext.SaveChangesAsync();
 
-            return Ok(createDiver);
+            return Ok(_mapper.Map<DiverDto>(diver));
             
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("Update/{id}")]
         [Authorize]
-        public async Task<IActionResult> updateDiver(Guid id, Diver updateDiver) {
+        public async Task<IActionResult> updateDiver(Guid id, UpdateDiverDto updateDiver) {
             
             var diver = await _DbContext.Divers.FindAsync(id);
-            if(diver == null) return NoContent();
+            if(diver == null) return BadRequest(new {
+                Error = "Diver not found"
+            });
+
+            _mapper.Map(updateDiver, diver);
 
             await _DbContext.SaveChangesAsync();
             return NoContent();
 
         }
         
-        [HttpDelete("{id}")]
+        [HttpDelete("Delete/{id}")]
         [Authorize]
-        public async Task<IActionResult> deleteDiver(Guid id, [FromHeader] string Token) {
+        public async Task<IActionResult> deleteDiver(Guid id) {
 
             var diver = await _DbContext.Divers.FindAsync(id);
 
             if(diver == null){
-                return NotFound();
+                return BadRequest(new {
+                    Error = "Diver not found"
+                });
             }
 
             _DbContext.Divers.Remove(diver);

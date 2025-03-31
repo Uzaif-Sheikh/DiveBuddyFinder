@@ -86,33 +86,43 @@ namespace DiveBuddyFinder.Migrations
                         .HasMaxLength(16)
                         .HasColumnType("varchar(16)");
 
-                    b.Property<Guid>("LocationId")
-                        .HasColumnType("char(36)");
+                    b.Property<int>("LocationPostCode")
+                        .HasColumnType("int");
 
                     b.Property<int>("NumberOfDives")
                         .HasColumnType("int");
 
+                    b.Property<int>("PostCode")
+                        .HasColumnType("int");
+
                     b.HasKey("UserId");
 
-                    b.HasIndex("LocationId");
+                    b.HasIndex("LocationPostCode");
 
                     b.ToTable("Divers");
                 });
 
             modelBuilder.Entity("DiveBuddyFinder.Models.Location", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("char(36)");
-
                     b.Property<int>("PostCode")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("PostCode"));
+
+                    b.Property<string>("CountryCode")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("longtext");
 
                     b.Property<string>("Suburb")
                         .IsRequired()
                         .HasColumnType("longtext");
 
-                    b.HasKey("Id");
+                    b.HasKey("PostCode");
 
                     b.ToTable("Locations");
                 });
@@ -186,7 +196,7 @@ namespace DiveBuddyFinder.Migrations
                 {
                     b.HasOne("DiveBuddyFinder.Models.Location", "Location")
                         .WithMany()
-                        .HasForeignKey("LocationId")
+                        .HasForeignKey("LocationPostCode")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 

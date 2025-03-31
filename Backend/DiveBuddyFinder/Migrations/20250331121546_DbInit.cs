@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -36,14 +37,18 @@ namespace DiveBuddyFinder.Migrations
                 name: "Locations",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    PostCode = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
                     Suburb = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    PostCode = table.Column<int>(type: "int", nullable: false)
+                    State = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CountryCode = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Locations", x => x.Id);
+                    table.PrimaryKey("PK_Locations", x => x.PostCode);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -80,17 +85,18 @@ namespace DiveBuddyFinder.Migrations
                     Image = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     Age = table.Column<int>(type: "int", nullable: false),
-                    LocationId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    PostCode = table.Column<int>(type: "int", nullable: false),
+                    LocationPostCode = table.Column<int>(type: "int", nullable: false),
                     LastActive = table.Column<DateTime>(type: "datetime(6)", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Divers", x => x.UserId);
                     table.ForeignKey(
-                        name: "FK_Divers_Locations_LocationId",
-                        column: x => x.LocationId,
+                        name: "FK_Divers_Locations_LocationPostCode",
+                        column: x => x.LocationPostCode,
                         principalTable: "Locations",
-                        principalColumn: "Id",
+                        principalColumn: "PostCode",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Divers_Users_UserId",
@@ -154,14 +160,29 @@ namespace DiveBuddyFinder.Migrations
                 column: "DiverId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Divers_LocationId",
+                name: "IX_Divers_LocationPostCode",
                 table: "Divers",
-                column: "LocationId");
+                column: "LocationPostCode");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RefreshTokens_UserId",
                 table: "RefreshTokens",
                 column: "UserId");
+            
+            migrationBuilder.InsertData(
+                table: "CertificateDetails", 
+                columns: new [] { "Id", "Name", "Agency", "Url"},
+                values: new object[,] {
+                    {Guid.NewGuid(), "Open Water Diver Or An Equivalent Certification", "PADI", "https://www.padi.com/courses/open-water-diver"},
+                    {Guid.NewGuid(), "Advanced Open Water Diver Or An Equivalent Certification", "PADI", "https://www.padi.com/courses/advanced-open-water-diver"},
+                    {Guid.NewGuid(), "Rescue Diver Or An Equivalent Certification", "PADI", "https://www.padi.com/courses/rescue-diver"},
+                    {Guid.NewGuid(), "Enriched Air (Nitrox) Diver Or An Equivalent Certification", "PADI", "https://www.padi.com/courses/enriched-air-diver"},
+                    {Guid.NewGuid(), "Open Water Diver Or An Equivalent Certification", "SSI", "https://www.divessi.com/en/get-certified/open-water-diver"},
+                    {Guid.NewGuid(), "Advanced Adventurer Or An Equivalent Certification", "SSI", "https://www.divessi.com/en/advanced-adventurer"},
+                    {Guid.NewGuid(), "Diver Stress & Rescue Or An Equivalent Certification", "SSI", "https://www.divessi.com/en/dive-courses/dive-course-details/dive-course-detail/rescue-diver-138"},
+                    {Guid.NewGuid(), "Enriched Air Nitrox Or An Equivalent Certification", "SSI", "https://www.divessi.com/en/dive-courses/dive-course-details/dive-course-detail/nitrox-32-36-139"},
+                    {Guid.NewGuid(), "Not Yet Certified Or Planning to get Certified", "NONE", "https://www.padi.com/courses"},
+                });
         }
 
         /// <inheritdoc />

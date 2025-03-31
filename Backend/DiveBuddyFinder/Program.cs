@@ -18,6 +18,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options => {
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 });
 
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
 builder.Services.AddSingleton<JwtService>();
 
 builder.Services.AddAuthentication(options => {

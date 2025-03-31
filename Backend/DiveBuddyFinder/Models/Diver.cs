@@ -25,7 +25,7 @@ namespace DiveBuddyFinder.Models {
         public int Age {get; set;}
 
         [Required]
-        public Guid LocationId {get; set;}
+        public int PostCode {get; set;}
 
         [Required]
         public Location Location {get; set;}
