@@ -176,11 +176,13 @@ namespace DiveBuddyFinder.Migrations
                     {Guid.NewGuid(), "Open Water Diver Or An Equivalent Certification", "PADI", "https://www.padi.com/courses/open-water-diver"},
                     {Guid.NewGuid(), "Advanced Open Water Diver Or An Equivalent Certification", "PADI", "https://www.padi.com/courses/advanced-open-water-diver"},
                     {Guid.NewGuid(), "Rescue Diver Or An Equivalent Certification", "PADI", "https://www.padi.com/courses/rescue-diver"},
+                    {Guid.NewGuid(), "Master Scuba Diver Or An Equivalent Certification", "PADI", "https://store.padi.com/en-au/education/become-a-padi-master-scuba-diver/"},
                     {Guid.NewGuid(), "Enriched Air (Nitrox) Diver Or An Equivalent Certification", "PADI", "https://www.padi.com/courses/enriched-air-diver"},
-                    {Guid.NewGuid(), "Open Water Diver Or An Equivalent Certification", "SSI", "https://www.divessi.com/en/get-certified/open-water-diver"},
-                    {Guid.NewGuid(), "Advanced Adventurer Or An Equivalent Certification", "SSI", "https://www.divessi.com/en/advanced-adventurer"},
-                    {Guid.NewGuid(), "Diver Stress & Rescue Or An Equivalent Certification", "SSI", "https://www.divessi.com/en/dive-courses/dive-course-details/dive-course-detail/rescue-diver-138"},
-                    {Guid.NewGuid(), "Enriched Air Nitrox Or An Equivalent Certification", "SSI", "https://www.divessi.com/en/dive-courses/dive-course-details/dive-course-detail/nitrox-32-36-139"},
+                    {Guid.NewGuid(), "Freediver Or An Equivalent Certification", "PADI", "https://store.padi.com/en-au/ns/courses/freediver/p/freediver/"},
+                    {Guid.NewGuid(), "Tec 40 Or An Equivalent Certification", "PADI", "https://store.padi.com/en-au/ns/courses/tec-40-and-tec-40-trimix/p/tec-40-and-tec-40-trimix/"},
+                    {Guid.NewGuid(), "Divemaster Or An Equivalent Certification", "PADI", "https://store.padi.com/en-us/courses/divemaster/p/60550-1B2C/"},
+                    {Guid.NewGuid(), "Open Water Scuba Diving Instructor Or An Equivalent Certification", "PADI", "https://store.padi.com/en-au/ns/courses/open-water-scuba-instructor/p/open-water-scuba-instructor/"},
+                    {Guid.NewGuid(), "Master Scuba Diver Trainer Or An Equivalent Certification", "PADI", "https://store.padi.com/en-au/ns/courses/master-scuba-diver-trainer/p/master-scuba-diver-trainer/"},
                     {Guid.NewGuid(), "Not Yet Certified Or Planning to get Certified", "NONE", "https://www.padi.com/courses"},
                 });
         }

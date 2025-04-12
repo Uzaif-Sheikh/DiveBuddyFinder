@@ -22,10 +22,35 @@ namespace DiveBuddyFinder.Controllers {
         }
 
         [HttpGet("GetDivers")]
-        public async Task<ActionResult<IEnumerable<DiverDto>>> GetDivers() {
+        public async Task<ActionResult<IEnumerable<DiverDto>>> GetDivers([FromQuery] int? postcode,
+                                                                        [FromQuery] string? firstname,
+                                                                        [FromQuery] string? suburb,
+                                                                        [FromQuery] string? state,
+                                                                        [FromQuery] int offset = 0) {
             
-            var divers = await _DbContext.Divers.ToListAsync();
-            return Ok(divers.Select(d => _mapper.Map<DiverDto>(d)));
+            IQueryable<Diver> divers = _DbContext.Divers;
+
+            if(postcode != null) {
+                divers.Where(d => d.PostCode == postcode);
+            }
+
+            if(!String.IsNullOrEmpty(firstname)) {
+                divers.Where(d => d.FirstName.Contains(firstname));
+            }
+
+            if(!String.IsNullOrEmpty(suburb)) {
+                divers.Where(d => d.Location.Suburb.Contains(suburb));
+            }
+
+            if(!String.IsNullOrEmpty(state)) {
+                divers.Where(d => d.Location.State.Contains(state));
+            }
+
+            var diversList = await divers.Skip(offset * 10)
+                            .Take(10)
+                            .ToListAsync();
+
+            return Ok(_mapper.Map<IEnumerable<DiverDto>>(diversList));
         }
 
         [HttpGet("GetDiverById/{id}")]

@@ -39,7 +39,10 @@ builder.Services.AddAuthentication(options => {
     };
 });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options => {
+    options.AddPolicy("SuperUser", policy => policy.RequireRole("SuperUser"));
+    options.AddPolicy("User", policy => policy.RequireRole("User"));
+});
 
 var app = builder.Build();
 

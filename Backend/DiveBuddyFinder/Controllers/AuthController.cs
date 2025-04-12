@@ -74,7 +74,7 @@ namespace DiveBuddyFinder.Controllers {
             var RefreshToken = await GetRefreshToken(User!.Id);
             
             return Ok(new AuthRespondDto() {
-                UserId = Guid.NewGuid(),
+                UserId = User.Id,
                 AccessToken = AccessToken,
                 RefreshToken = RefreshToken
             });

@@ -40,7 +40,7 @@ namespace DiveBuddyFinder.Controllers {
         }
 
         [HttpPost("Create")]
-        [Authorize(Roles = "SuperUser")]
+        [Authorize(Policy = "SuperUser")]
         public async Task<ActionResult<CertificateDto>> createCertificate(CreateCertificateDto createCertificate) {
 
             var certificate = _mapper.Map<CertificateDetails>(createCertificate);
@@ -52,7 +52,7 @@ namespace DiveBuddyFinder.Controllers {
         }
 
         [HttpPut("Update/{id}")]
-        [Authorize(Roles = "SuperUser")]
+        [Authorize(Policy = "SuperUser")]
         public async Task<IActionResult> updateCertificate(Guid id, CreateCertificateDto updateCertificate) {
             
             var certificate = await _DbContext.CertificateDetails.FindAsync(id);
@@ -68,7 +68,7 @@ namespace DiveBuddyFinder.Controllers {
         }
         
         [HttpDelete("Delete/{id}")]
-        [Authorize(Roles = "SuperUser")]
+        [Authorize(Policy = "SuperUser")]
         public async Task<IActionResult> deleteCertificate(Guid id) {
 
             var certificate = await _DbContext.CertificateDetails.FindAsync(id);
