@@ -22,7 +22,7 @@ namespace DiveBuddyFinder.Controllers {
         }
 
         [HttpGet("GetDivers")]
-        public async Task<ActionResult<IEnumerable<DiverDto>>> GetDivers([FromQuery] int? postcode,
+        public async Task<ActionResult<IEnumerable<DiverViewDto>>> GetDivers([FromQuery] int? postcode,
                                                                         [FromQuery] string? firstname,
                                                                         [FromQuery] string? suburb,
                                                                         [FromQuery] string? state,
@@ -50,7 +50,7 @@ namespace DiveBuddyFinder.Controllers {
                             .Take(10)
                             .ToListAsync();
 
-            return Ok(_mapper.Map<IEnumerable<DiverDto>>(diversList));
+            return Ok(_mapper.Map<IEnumerable<DiverViewDto>>(diversList));
         }
 
         [HttpGet("GetDiverById/{id}")]
@@ -66,7 +66,7 @@ namespace DiveBuddyFinder.Controllers {
 
         [HttpPost("Create")]
         [Authorize]
-        public async Task<ActionResult<DiverDto>> createDiver(CreateDiverDto createDiver) {
+        public async Task<ActionResult<DiverDto>> createDiver([FromBody] CreateDiverDto createDiver) {
 
             var diver = _mapper.Map<Diver>(createDiver);
             _DbContext.Divers.Add(diver);
@@ -78,7 +78,7 @@ namespace DiveBuddyFinder.Controllers {
 
         [HttpPut("Update/{id}")]
         [Authorize]
-        public async Task<IActionResult> updateDiver(Guid id, UpdateDiverDto updateDiver) {
+        public async Task<IActionResult> updateDiver(Guid id, [FromBody] UpdateDiverDto updateDiver) {
             
             var diver = await _DbContext.Divers.FindAsync(id);
             if(diver == null) return BadRequest(new {

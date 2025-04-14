@@ -9,6 +9,7 @@ namespace DiveBuddyFinder {
         public AutoMapperProfile()
         {
             CreateMap<Diver, DiverDto>();
+            CreateMap<Diver, DiverViewDto>();
             CreateMap<CertificateDetails, CertificateDto>();
             CreateMap<Location, LocationDto>();
             CreateMap<CreateDiverDto, Diver>();

@@ -1,0 +1,11 @@
+.page-template {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.page-content {
+  padding-top: 4.5rem;
+  padding-bottom: 2rem;
+  width: 100%;
+}

@@ -11,14 +11,14 @@ namespace DiveBuddyFinder.Models {
         public string FirstName {get; set;}
 
         [StringLength(16, ErrorMessage = "Maximum length for last name is 16.")]
-        public string? LastName {get; set;}
+        public string? LastName {get; set;} = "";
 
         [Required]
         public int NumberOfDives {get; set;}
 
-        public string? Bio {get; set;}
+        public string Bio {get; set;} = "";
 
-        public string? Image {get; set;}
+        public string Image {get; set;} = "";
 
         [Required]
         [Range(18, 90, ErrorMessage = "Age Should be between the range 18 - 90.")]

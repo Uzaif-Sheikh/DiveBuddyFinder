@@ -1,7 +1,6 @@
-using System.ComponentModel.DataAnnotations;
 
 namespace DiveBuddyFinder.Models.Dtos.Views {
-    public class DiverDto {
+    public class DiverViewDto {
         public Guid UserId {get; set;}
         
         public string FirstName {get; set;}
@@ -17,10 +16,6 @@ namespace DiveBuddyFinder.Models.Dtos.Views {
         public int Age {get; set;}
 
         public LocationDto Location {get; set;}
-
-        public DateTime LastActive {get; set;}
-        
-        public List<CertificateDto> Certificates {get; set;}
-
+ 
     }
 }
