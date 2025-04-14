@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, Typography, Box, Avatar, Stack, Chip } from '@mui/joy';
+import { Card, Typography, Box, Stack, Chip } from '@mui/joy';
 import './DiversList.css';
 
 interface Diver {
@@ -87,13 +87,10 @@ const DiversList: React.FC = () => {
       <Box className="divers-grid">
         {mockDivers.map((diver) => (
           <Card key={diver.id} className="diver-card" color="primary">
-            <Box className="diver-card-content">
-              <Avatar
-                src={diver.imageUrl}
-                alt={diver.name}
-                size="lg"
-                className="diver-avatar"
-              />
+            <Box className="diver-card-content">    
+              <div className="diver-avatar-container">
+                <img src={diver.imageUrl} className="diver-avatar"/>
+              </div>
               <Box className="diver-info">
                 <Typography level="h4">{diver.name}</Typography>
                 <Typography level="body-sm" color="neutral">

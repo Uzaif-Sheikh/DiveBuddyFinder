@@ -60,3 +60,10 @@
   color: #1a56db;
   font-weight: 600;
 }
+
+.see-more-divers {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;
+}

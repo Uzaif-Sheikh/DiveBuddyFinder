@@ -6,7 +6,7 @@
 
 .divers-list-title {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem !important;
   color: #1a56db;
 }
 
@@ -32,19 +32,26 @@
   transform: translateY(-5px);
   box-shadow: 0 8px 12px -1px rgba(0, 0, 0, 0.15);
   background: linear-gradient(135deg, #ffffff 0%, #e8f0fe 100%);
+  cursor: pointer;
 }
 
 .diver-card-content {
   display: flex;
   gap: 1rem;
-  padding: 1.5rem;
   height: 100%;
   border-radius: 0.5rem;
 }
 
+.diver-avatar-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .diver-avatar {
-  width: 80px;
-  height: 80px;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
 }
 
 .diver-info {
