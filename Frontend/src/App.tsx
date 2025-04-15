@@ -4,6 +4,7 @@ import Home from './pages/Home/Home';
 import Login from './pages/Login/Login';
 import Signup from './pages/Signup/Signup';
 import DiverInfo from './pages/DiverInfo/DiverInfo';
+import Welcome from './pages/Welcome/Welcome';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/diver/:id" element={<DiverInfo />} />
+          <Route path="/welcome" element={<Welcome />} />
         </Routes>
       </Router>
     </CssVarsProvider>
