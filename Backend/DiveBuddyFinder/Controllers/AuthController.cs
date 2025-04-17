@@ -18,11 +18,16 @@ namespace DiveBuddyFinder.Controllers {
         private readonly ApplicationDbContext _DbContext;
         private readonly JwtService _JwtSerivce;
         private readonly IConfiguration _Config;
+        private readonly EmailService _EmailService;
 
-        public AuthController(ApplicationDbContext applicationDbContext, JwtService jwtService, IConfiguration configuration) {
+        public AuthController(ApplicationDbContext applicationDbContext
+                            , JwtService jwtService
+                            , IConfiguration configuration
+                            , EmailService emailService) {
             _DbContext = applicationDbContext;
             _JwtSerivce = jwtService;
             _Config = configuration;
+            _EmailService = emailService;
         }
 
         [HttpPost("Register")]
@@ -157,6 +162,16 @@ namespace DiveBuddyFinder.Controllers {
             await _DbContext.RefreshTokens
             .Where(r => r.UserId == userId)
             .ExecuteDeleteAsync();
+
+            return Ok();
+        }
+
+        [HttpPost("VerifyTheUser")]
+        public async Task<IActionResult> VerifyTheUser([FromBody] string email) {
+
+            // var user = _DbContext.Users.FirstAsync(u => u.Email == email);
+
+            await _EmailService.SendVerificationCode(email);
 
             return Ok();
         }

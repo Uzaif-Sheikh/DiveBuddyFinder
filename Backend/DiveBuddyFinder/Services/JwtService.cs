@@ -8,7 +8,7 @@ namespace DiveBuddyFinder.Service {
 
     public class JwtService {
 
-        IConfiguration _config;
+        private readonly IConfiguration _config;
 
         public JwtService(IConfiguration configuration) {
             _config = configuration;

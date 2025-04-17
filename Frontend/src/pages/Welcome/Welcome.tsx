@@ -101,7 +101,6 @@ const Welcome: React.FC = () => {
   };
 
   const selectAddress = (address: AddressResult) => {
-    console.log(address);
     setAddress({
       osm_id: address?.osm_id,
       suburb: address?.address?.suburb ?? '',
@@ -264,6 +263,7 @@ const Welcome: React.FC = () => {
                         value={address.suburb}
                         required
                         disabled={address.suburb.length === 0 ? false : true}
+                        onChange={e => setAddress({...address, postalCode: e.target.value})}
                       />
                     </Box>
                   
@@ -286,6 +286,7 @@ const Welcome: React.FC = () => {
                       value={address.postalCode}
                       required
                       disabled={address.postalCode.length === 0 ? false : true}
+                      onChange={e => setAddress({...address, postalCode: e.target.value})}
                     />
                   </Box>
                   
