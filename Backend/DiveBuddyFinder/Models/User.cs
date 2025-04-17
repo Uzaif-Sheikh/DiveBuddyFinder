@@ -14,6 +14,9 @@ namespace DiveBuddyFinder.Models {
         [Required]
         public string Role {get; set;} = "User";
 
+        [Required]
+        public bool isVerified {get; set;} = false;
+
         public Diver Diver {get; set;}
     }
 }

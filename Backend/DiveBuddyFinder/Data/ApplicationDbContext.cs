@@ -17,6 +17,8 @@ namespace DiveBuddyFinder.Data {
 
         public DbSet<RefreshToken> RefreshTokens {get; set;}
 
+        public DbSet<UserVerification> UserVerifications {get; set;}
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -32,8 +34,7 @@ namespace DiveBuddyFinder.Data {
                         .HasForeignKey<Diver>(d => d.UserId);
             
             modelBuilder.Entity<Location>()
-                        .HasKey(l => l.PostCode);
-                        
+                        .HasKey(l => l.PostCode);    
         }
     }
 }

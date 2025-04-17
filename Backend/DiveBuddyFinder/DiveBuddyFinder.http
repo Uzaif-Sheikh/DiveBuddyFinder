@@ -1,6 +1,6 @@
 @DiveBuddyFinder_HostAddress = https://localhost:7140
-
-GET {{DiveBuddyFinder_HostAddress}}/api/Diver
+POST {{DiveBuddyFinder_HostAddress}}/api/Auth/GetVerificationCode
 Accept: application/json
-
+Content-Type: application/json
+"camin24268@linxues.com"
 ###

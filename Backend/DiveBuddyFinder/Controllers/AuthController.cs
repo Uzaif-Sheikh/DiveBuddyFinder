@@ -8,6 +8,7 @@ using DiveBuddyFinder.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using YamlDotNet.Core.Tokens;
 
 namespace DiveBuddyFinder.Controllers {
 
@@ -166,14 +167,99 @@ namespace DiveBuddyFinder.Controllers {
             return Ok();
         }
 
-        [HttpPost("VerifyTheUser")]
-        public async Task<IActionResult> VerifyTheUser([FromBody] string email) {
+        [HttpPost("GetVerificationCode")]
+        [Authorize]
+        public async Task<IActionResult> GetVerificationCode([FromBody] string email) {
+            // TODO: need to refactor the code to put the logic in email service
+            
+            var user = await _DbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
 
-            // var user = _DbContext.Users.FirstAsync(u => u.Email == email);
+            if(user == null) {
+                return BadRequest(new {
+                    Error = "Email is not registered"
+                });
+            }
 
-            await _EmailService.SendVerificationCode(email);
+            if(user.isVerified == true) {
+                return BadRequest(new {
+                    Error = "Email is already verified"
+                });
+            }
+
+            var code = GenerateVerificationCode();
+
+            await DeleteAllVerificationCodes(user.Id);
+
+            var VerificationCode = new UserVerification() {
+                VerificationCode = code,
+                ExpireTime = DateTime.Now.AddMinutes(15),
+                UserId = user.Id
+            };
+
+            _DbContext.UserVerifications.Add(VerificationCode);
+            await _DbContext.SaveChangesAsync();
+
+            await _EmailService.SendVerificationCode(code, email);
 
             return Ok();
+        }
+
+        [HttpPost("VerifyTheUser/{code}")]
+        [Authorize]
+        public async Task<IActionResult> VerifyTheUser([FromRoute] int code) {
+            // TODO: need to refactor the code to put the logic in email service
+
+            var userClaim = HttpContext.User;
+            var userId = userClaim.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if(userId.Length == 0) {
+                return BadRequest(new {
+                    Error = "Invalid user request"
+                });
+            }
+
+            var user = await _DbContext.Users.FirstOrDefaultAsync(u => u.Id == Guid.Parse(userId));
+
+            if(user == null) {
+                return BadRequest(new {
+                    Error = "Invalid token"
+                });
+            }
+
+            if(user.isVerified) {
+                return BadRequest(new {
+                    Error = "User is already verified"
+                });
+            }
+
+            var codeRow = await _DbContext.UserVerifications.FirstOrDefaultAsync(uv => uv.UserId == user.Id);
+
+            if(codeRow?.ExpireTime < DateTime.Now) {
+                return BadRequest(new {
+                    Error = "Verification code has expired"
+                });
+            }
+
+            if(code != codeRow?.VerificationCode) {
+                return BadRequest(new {
+                    Error = "Invalid verification code"
+                });
+            }
+
+            await DeleteAllVerificationCodes(user.Id);
+
+            user.isVerified = true;
+            await _DbContext.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        private async Task DeleteAllVerificationCodes(Guid UserId) {
+            var DeleteCodeList = await _DbContext.UserVerifications.Where(uv => uv.UserId == UserId).ToListAsync();
+
+            if(DeleteCodeList.Any()) {
+                _DbContext.UserVerifications.RemoveRange(DeleteCodeList);
+            }
         }
 
         private string HashTheString(string Password) {
@@ -187,6 +273,10 @@ namespace DiveBuddyFinder.Controllers {
 
             return stringBuilder.ToString();
 
+        }
+
+        private int GenerateVerificationCode() {
+            return RandomNumberGenerator.GetInt32(100000, 999999);
         }
 
         private async Task<string> GetRefreshToken(Guid Id) {
