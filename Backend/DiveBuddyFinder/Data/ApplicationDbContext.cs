@@ -19,6 +19,8 @@ namespace DiveBuddyFinder.Data {
 
         public DbSet<UserVerification> UserVerifications {get; set;}
 
+        public DbSet<ResetPwd> ResetPwds {get; set;}
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

@@ -64,7 +64,7 @@ namespace DiveBuddyFinder.Controllers {
         }
 
         [HttpPost("Login")]
-        public async Task<ActionResult<AuthRespondDto>> Login([FromBody] AuthRequestDto LoginDto) {
+        public async Task<ActionResult<LoginRespondDto>> Login([FromBody] AuthRequestDto LoginDto) {
 
             string password = HashTheString(LoginDto.Password);
 
@@ -79,10 +79,11 @@ namespace DiveBuddyFinder.Controllers {
             var AccessToken = _JwtSerivce.GenerateAccessToken(User!.Id, LoginDto.Email, "User");
             var RefreshToken = await GetRefreshToken(User!.Id);
             
-            return Ok(new AuthRespondDto() {
+            return Ok(new LoginRespondDto() {
                 UserId = User.Id,
                 AccessToken = AccessToken,
-                RefreshToken = RefreshToken
+                RefreshToken = RefreshToken,
+                isVerified = User.isVerified
             });
         }
 
@@ -145,28 +146,6 @@ namespace DiveBuddyFinder.Controllers {
 
         }
 
-        [HttpDelete("RevokeRefreshToken/{UserId}")]
-        public async Task<IActionResult> RevokeRefreshToken(Guid UserId) {
-
-            Guid id;
-            Guid? userId = Guid.TryParse(
-                HttpContext.User
-                .FindFirst(ClaimTypes.NameIdentifier)?
-                .Value,out id) ? id : null;
-
-            if(userId is null) {
-                return BadRequest(new {
-                    Error = "UserId is not valid"
-                });
-            }
-
-            await _DbContext.RefreshTokens
-            .Where(r => r.UserId == userId)
-            .ExecuteDeleteAsync();
-
-            return Ok();
-        }
-
         [HttpPost("GetVerificationCode")]
         [Authorize]
         public async Task<IActionResult> GetVerificationCode([FromBody] string email) {
@@ -212,7 +191,7 @@ namespace DiveBuddyFinder.Controllers {
             var userClaim = HttpContext.User;
             var userId = userClaim.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if(userId.Length == 0) {
+            if(userId?.Length == 0) {
                 return BadRequest(new {
                     Error = "Invalid user request"
                 });
@@ -254,11 +233,100 @@ namespace DiveBuddyFinder.Controllers {
             return Ok();
         }
 
+        [HttpPost("ForgotPassword/{email}")]
+        public async Task<IActionResult> ForgotPassword([FromRoute] string email) {
+
+            var user = await _DbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            if(user == null) {
+                return BadRequest(new {
+                    Error = "Email is not registered"
+                });
+            }
+
+            await DeleteAllResetPwdToken(user.Id);
+
+            var pwdReset = new ResetPwd(){
+                ExpireTime = DateTime.Now.AddMinutes(15),
+                UserId = user.Id
+            };
+
+            _DbContext.ResetPwds.Add(pwdReset);
+            await _DbContext.SaveChangesAsync();
+
+            await _EmailService.SendPasswordResetMail(email, pwdReset.Id);
+
+            return Ok();
+        }
+
+        [HttpPost("ResetPassword")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPwdRequestDto resetPwdRequestDto) {
+
+            var resetPwd = await _DbContext.ResetPwds.Include(r => r.User).FirstOrDefaultAsync(r => r.Id == resetPwdRequestDto.Token);
+
+            if(resetPwd == null) {
+                return BadRequest(new {
+                    Error = "Invalid Token"
+                });
+            }
+
+            if(resetPwd.used || DateTime.Now > resetPwd.ExpireTime) {
+                return BadRequest(new {
+                    Error = "Token has been expired"
+                });
+            }
+
+            var user = resetPwd.User;
+
+            if(user.Password == HashTheString(resetPwdRequestDto.Password)) {
+                return BadRequest(new {
+                    Error = "New password can not be the same as the old password"
+                });
+            }
+
+            user.Password = HashTheString(resetPwdRequestDto.Password);
+            
+            await DeleteAllResetPwdToken(user.Id);
+            await _DbContext.SaveChangesAsync();
+
+            return Ok();
+        }
+
+        [HttpDelete("RevokeRefreshToken/{UserId}")]
+        public async Task<IActionResult> RevokeRefreshToken(Guid UserId) {
+
+            Guid id;
+            Guid? userId = Guid.TryParse(
+                HttpContext.User
+                .FindFirst(ClaimTypes.NameIdentifier)?
+                .Value,out id) ? id : null;
+
+            if(userId is null) {
+                return BadRequest(new {
+                    Error = "UserId is not valid"
+                });
+            }
+
+            await _DbContext.RefreshTokens
+            .Where(r => r.UserId == userId)
+            .ExecuteDeleteAsync();
+
+            return Ok();
+        }
+
         private async Task DeleteAllVerificationCodes(Guid UserId) {
             var DeleteCodeList = await _DbContext.UserVerifications.Where(uv => uv.UserId == UserId).ToListAsync();
 
             if(DeleteCodeList.Any()) {
                 _DbContext.UserVerifications.RemoveRange(DeleteCodeList);
+            }
+        }
+
+        private async Task DeleteAllResetPwdToken(Guid UserId) {
+            var deleteResetPwdTokenList = await _DbContext.ResetPwds.Where(r => r.UserId == UserId).ToListAsync();
+
+            if(deleteResetPwdTokenList.Any()) {
+                _DbContext.ResetPwds.RemoveRange(deleteResetPwdTokenList);
             }
         }
 
