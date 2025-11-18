@@ -20,44 +20,6 @@
   padding-bottom: 2rem;
 }
 
-.diver-card {
-  transition: transform 0.2s, box-shadow 0.2s;
-  height: 100%;
-  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-}
-
-.diver-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 12px -1px rgba(0, 0, 0, 0.15);
-  background: linear-gradient(135deg, #ffffff 0%, #e8f0fe 100%);
-  cursor: pointer;
-}
-
-.diver-card-content {
-  display: flex;
-  gap: 1rem;
-  height: 100%;
-  border-radius: 0.5rem;
-}
-
-.diver-avatar-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.diver-avatar {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-}
-
-.diver-info {
-  flex: 1;
-}
-
 .specialties-container {
   margin-top: 1rem;
   flex-wrap: wrap;

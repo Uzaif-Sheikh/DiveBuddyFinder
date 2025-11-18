@@ -197,7 +197,7 @@ namespace DiveBuddyFinder.Controllers {
                 });
             }
 
-            var user = await _DbContext.Users.FirstOrDefaultAsync(u => u.Id == Guid.Parse(userId));
+            var user = await _DbContext.Users.FirstOrDefaultAsync(u => u.Id == Guid.Parse(userId!));
 
             if(user == null) {
                 return BadRequest(new {

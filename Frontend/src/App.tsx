@@ -8,21 +8,26 @@ import Welcome from './pages/Welcome/Welcome';
 import VerifyCode from './pages/VerifyCode/VerifyCode';
 import ForgotPassword from './pages/ForgotPassword/ForgotPassword';
 import ResetPassword from './pages/ResetPassword/ResetPassword';
+import SearchDivers from './pages/SearchDivers/SearchDivers';
+import ScrollTop from './components/ScrollTop/ScrollTop';
 
 function App() {
   return (
     <CssVarsProvider>
       <Router>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/diver/:id" element={<DiverInfo />} />
-          <Route path="/welcome" element={<Welcome />} />
-          <Route path="/verify-code" element={<VerifyCode />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
-        </Routes>
+        <ScrollTop>
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/diver/:id" element={<DiverInfo />} />
+            <Route path="/welcome/:id" element={<Welcome />} />
+            <Route path="/verify-code" element={<VerifyCode />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route path="/search-divers" element={<SearchDivers />} />
+          </Routes>
+        </ScrollTop>
       </Router>
     </CssVarsProvider>
   );

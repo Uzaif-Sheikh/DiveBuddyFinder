@@ -52,6 +52,9 @@ const Login: React.FC = () => {
             <div className="signup-link">
               Don't have an account? <Link to="/signup">Sign up</Link>
             </div>
+            <div className="signup-link">
+              <Link to="/forgot-password">forgot password?</Link>
+            </div>
           </form>
         </Box>
       </Container>

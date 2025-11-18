@@ -20,7 +20,7 @@ const Home: React.FC = () => {
             Connect with fellow divers and explore the underwater world together
           </Typography>
           <Box className="button-container">
-            <Button size="lg" color="primary">
+            <Button size="lg" color="primary" onClick={() => navigator('/search-divers')}>
               Find a Buddy
             </Button>
             <Button size="lg" variant="outlined" color="neutral" onClick={() => navigator('/signup')}>
@@ -31,7 +31,7 @@ const Home: React.FC = () => {
       </Box>
       <DiversList />
       <Box className="see-more-divers">
-        <Button endDecorator="→" size="lg" variant="outlined">
+        <Button endDecorator="→" size="lg" variant="outlined" onClick={() => navigator('/search-divers')}>
           checkout more divers
         </Button>
       </Box>

@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Typography, Box, Button, Input, FormLabel, Textarea, CircularProgress } from '@mui/joy';
 import PageTemplate from '../../components/PageTemplate';
 import { debounce } from '../../utils/debounce';
@@ -22,6 +22,7 @@ const availableCertificates = [
 ];
 
 const Welcome: React.FC = () => {
+  const { id } = useParams<{ id: string}>();
   const navigate = useNavigate();
 
   const [diverInfo, setDiverInfo] = useState({
