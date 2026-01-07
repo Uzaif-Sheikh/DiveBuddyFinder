@@ -77,6 +77,14 @@
   font-weight: 500;
 }
 
+.circular-progress {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin: 0.5em;
+}
+
 .signup-link a:hover {
   text-decoration: underline;
 } 

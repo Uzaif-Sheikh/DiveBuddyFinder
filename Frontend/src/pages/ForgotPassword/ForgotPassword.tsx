@@ -14,7 +14,7 @@ const ForgotPassword: React.FC = () => {
     if (error) setError('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const   handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!email.trim()) {

@@ -56,10 +56,20 @@ namespace DiveBuddyFinder.Controllers {
             var AccessToken = _JwtSerivce.GenerateAccessToken(User.Id, User.Email, User.Role);
             var RefreshToken = await GetRefreshToken(User.Id);
 
+            var cookieOption = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Path = "/api/RefreshToken",
+                Expires = DateTime.UtcNow.AddDays(int.Parse(_Config["Jwt:RefreshTokenTimeInDays"]!))
+            };
+
+            Response.Cookies.Append("refreshToken", RefreshToken, cookieOption);
+
             return Ok(new AuthRespondDto() {
                 UserId = User.Id,
-                AccessToken = AccessToken,
-                RefreshToken = RefreshToken
+                AccessToken = AccessToken
             });
         }
 
@@ -79,10 +89,20 @@ namespace DiveBuddyFinder.Controllers {
             var AccessToken = _JwtSerivce.GenerateAccessToken(User!.Id, LoginDto.Email, "User");
             var RefreshToken = await GetRefreshToken(User!.Id);
             
+            var cookieOption = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Path = "/api/RefreshToken",
+                Expires = DateTime.UtcNow.AddDays(int.Parse(_Config["Jwt:RefreshTokenTimeInDays"]!))
+            };
+
+            Response.Cookies.Append("refreshToken", RefreshToken, cookieOption);
+
             return Ok(new LoginRespondDto() {
                 UserId = User.Id,
                 AccessToken = AccessToken,
-                RefreshToken = RefreshToken,
                 isVerified = User.isVerified
             });
         }
@@ -139,9 +159,19 @@ namespace DiveBuddyFinder.Controllers {
 
             await _DbContext.SaveChangesAsync();
 
+            var cookieOption = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Path = "/api/RefreshToken",
+                Expires = RefreshToken.ExpiresOnUtc
+            };
+
+            Response.Cookies.Append("refreshToken", newRefreshToken, cookieOption);
+
             return Ok(new RefreshTokenRespond() {
-                AccessToken = AccessToken,
-                RefreshToken = newRefreshToken
+                AccessToken = AccessToken
             });
 
         }
