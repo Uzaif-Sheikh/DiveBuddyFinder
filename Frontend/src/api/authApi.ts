@@ -6,19 +6,18 @@ export interface authPayload {
     password: string;
 }
 
-type ResultResponse<T> = | {ok: true; status: number; data: T} 
+type ResultResponse<T> = {ok: true; status: number; data: T} 
 | {ok: false; status: number; error: Error};
 
 type AuthResponse = {
     userId: string;
     accessToken: string;
-    refreshToken: string;
+    isVerified: boolean;
 }
 
 type RegisterResponse = ResultResponse<AuthResponse>;
 
-type LoginResponse = ResultResponse<AuthResponse & { isVerified: boolean}>
-
+type LoginResponse = ResultResponse<AuthResponse>;
 
 
 
@@ -33,11 +32,17 @@ export const LoginApi = async (payload: authPayload): Promise<LoginResponse> => 
         });
     
         const res = await result.json();
-    
+        if(!result.ok) {
+            return {
+                ok: result.ok,
+                status: result.status,
+                error: new Error(res.message || 'Login failed')
+            };
+        }
         return {
             ok: result.ok,
             status: result.status,
-            ...res
+            data: { userId: res.userId, accessToken: res.accessToken, isVerified: res.isVerified }
         };
     } catch (error) {
         throw new Error("call failed for login api");

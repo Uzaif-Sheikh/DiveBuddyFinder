@@ -1,15 +1,22 @@
 import React, { useState } from 'react';
 import { Alert, Box, CircularProgress, Container, Input, Button } from '@mui/joy';
+import { useDispatch } from 'react-redux';
 import PageTemplate from '../../components/PageTemplate';
 import { Link } from 'react-router-dom';
 import './Login.css';
 import { LoginApi } from '../../api/authApi';
+import { AppDispatch } from '../../store/store';
+import { setUserState, userState } from '../../store/UserReducer';
+import { useNavigate } from 'react-router-dom';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [processing, setProcessing] = useState(false);
+  const navigate = useNavigate();
+
+  const dispatch = useDispatch<AppDispatch>();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,6 +26,22 @@ const Login: React.FC = () => {
       const res = await LoginApi({"email": email, "password": password});
       if(!res.ok) {
         setError(String(res.error));
+      }
+
+      if(res.ok) {
+        console.log(res);
+        const payload: userState = {
+          id: res.data.userId,
+          name: '',
+          email: email,
+          role: '',
+          isVerifed: res.data.isVerified
+        };
+        dispatch(setUserState(payload));
+
+        if(!res.data.isVerified) {
+          navigate('/verify-code');
+        }
       }
 
     } catch (error) {
