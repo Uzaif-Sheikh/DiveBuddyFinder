@@ -8,13 +8,16 @@ using DiveBuddyFinder.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Namotion.Reflection;
 using YamlDotNet.Core.Tokens;
 
-namespace DiveBuddyFinder.Controllers {
+namespace DiveBuddyFinder.Controllers
+{
 
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController : ControllerBase {
+    public class AuthController : ControllerBase
+    {
 
         private readonly ApplicationDbContext _DbContext;
         private readonly JwtService _JwtSerivce;
@@ -24,7 +27,8 @@ namespace DiveBuddyFinder.Controllers {
         public AuthController(ApplicationDbContext applicationDbContext
                             , JwtService jwtService
                             , IConfiguration configuration
-                            , EmailService emailService) {
+                            , EmailService emailService)
+        {
             _DbContext = applicationDbContext;
             _JwtSerivce = jwtService;
             _Config = configuration;
@@ -32,19 +36,23 @@ namespace DiveBuddyFinder.Controllers {
         }
 
         [HttpPost("Register")]
-        public async Task<ActionResult<AuthRespondDto>> Register([FromBody] AuthRequestDto RegisterDto) {
+        public async Task<ActionResult<AuthRespondDto>> Register([FromBody] AuthRequestDto RegisterDto)
+        {
 
             var GetUser = await _DbContext.Users.FirstOrDefaultAsync(u => u.Email == RegisterDto.Email);
 
-            if(GetUser != null) {
-                return BadRequest(new {
+            if (GetUser != null)
+            {
+                return BadRequest(new
+                {
                     Error = "User with the same email already exist"
                 });
             }
 
             string password = HashTheString(RegisterDto.Password);
 
-            User User = new User() {
+            User User = new User()
+            {
                 Email = RegisterDto.Email,
                 Password = password,
                 Role = "User"
@@ -59,48 +67,53 @@ namespace DiveBuddyFinder.Controllers {
             var cookieOption = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Path = "/api/RefreshToken",
+                Secure = false,
+                SameSite = SameSiteMode.Lax,
+                Path = "/api/Auth/RefreshToken",
                 Expires = DateTime.UtcNow.AddDays(int.Parse(_Config["Jwt:RefreshTokenTimeInDays"]!))
             };
 
             Response.Cookies.Append("refreshToken", RefreshToken, cookieOption);
 
-            return Ok(new AuthRespondDto() {
+            return Ok(new AuthRespondDto()
+            {
                 UserId = User.Id,
                 AccessToken = AccessToken
             });
         }
 
         [HttpPost("Login")]
-        public async Task<ActionResult<LoginRespondDto>> Login([FromBody] AuthRequestDto LoginDto) {
+        public async Task<ActionResult<LoginRespondDto>> Login([FromBody] AuthRequestDto LoginDto)
+        {
 
             string password = HashTheString(LoginDto.Password);
 
             var User = await _DbContext.Users.FirstOrDefaultAsync(u => u.Email == LoginDto.Email && u.Password == password);
 
-            if(User is null) {
-                return BadRequest(new {
+            if (User is null)
+            {
+                return BadRequest(new
+                {
                     Error = "User was not found"
                 });
             }
 
             var AccessToken = _JwtSerivce.GenerateAccessToken(User!.Id, LoginDto.Email, "User");
             var RefreshToken = await GetRefreshToken(User!.Id);
-            
+
             var cookieOption = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Path = "/api/RefreshToken",
+                Secure = false, // Set to false for development, should be true in production
+                SameSite = SameSiteMode.Lax,
+                Path = "/api/Auth/RefreshToken",
                 Expires = DateTime.UtcNow.AddDays(int.Parse(_Config["Jwt:RefreshTokenTimeInDays"]!))
             };
 
             Response.Cookies.Append("refreshToken", RefreshToken, cookieOption);
 
-            return Ok(new LoginRespondDto() {
+            return Ok(new LoginRespondDto()
+            {
                 UserId = User.Id,
                 AccessToken = AccessToken,
                 isVerified = User.isVerified
@@ -109,22 +122,27 @@ namespace DiveBuddyFinder.Controllers {
 
         [HttpPost("Logout")]
         [Authorize]
-        public async Task<IActionResult> Logout() {
+        public async Task<IActionResult> Logout()
+        {
 
             var user = HttpContext.User;
 
             var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if(userId is null) {
-                return BadRequest(new {
+            if (userId is null)
+            {
+                return BadRequest(new
+                {
                     Error = "Access Token is not valid"
                 });
             }
 
             var RefreshToken = await _DbContext.RefreshTokens.FirstOrDefaultAsync(r => r.UserId == Guid.Parse(userId!));
 
-            if(RefreshToken is null) {
-                return BadRequest(new {
+            if (RefreshToken is null)
+            {
+                return BadRequest(new
+                {
                     Error = "Logout Failed"
                 });
             }
@@ -137,14 +155,26 @@ namespace DiveBuddyFinder.Controllers {
         }
 
         [HttpPost("RefreshToken")]
-        public async Task<ActionResult<RefreshTokenRespond>> RefreshToken([FromBody] RefreshTokenRequest refreshTokenRequest) {
+        public async Task<ActionResult<RefreshTokenRespond>> RefreshToken()
+        {
+
+            var refreshTokenFromRequest = Request.Cookies["refreshToken"];
+
+
+            if (string.IsNullOrEmpty(refreshTokenFromRequest))
+                return BadRequest(new
+                {
+                    Error = "Refresh Token is missing"
+                });
 
             var RefreshToken = await _DbContext.RefreshTokens
                                                 .Include(r => r.User)
-                                                .FirstOrDefaultAsync(r => r.Token == refreshTokenRequest.Token);
+                                                .FirstOrDefaultAsync(r => r.Token == refreshTokenFromRequest);
 
-            if(RefreshToken is null || RefreshToken.ExpiresOnUtc < DateTime.UtcNow) {
-                return BadRequest(new {
+            if (RefreshToken is null || RefreshToken.ExpiresOnUtc < DateTime.UtcNow)
+            {
+                return BadRequest(new
+                {
                     Error = "Token is Invalid."
                 });
             }
@@ -162,15 +192,16 @@ namespace DiveBuddyFinder.Controllers {
             var cookieOption = new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
-                Path = "/api/RefreshToken",
+                Secure = false,
+                SameSite = SameSiteMode.Lax,
+                Path = "/api/Auth/RefreshToken",
                 Expires = RefreshToken.ExpiresOnUtc
             };
 
             Response.Cookies.Append("refreshToken", newRefreshToken, cookieOption);
 
-            return Ok(new RefreshTokenRespond() {
+            return Ok(new RefreshTokenRespond()
+            {
                 AccessToken = AccessToken
             });
 
@@ -178,19 +209,24 @@ namespace DiveBuddyFinder.Controllers {
 
         [HttpPost("GetVerificationCode")]
         [Authorize]
-        public async Task<IActionResult> GetVerificationCode([FromBody] string email) {
+        public async Task<IActionResult> GetVerificationCode([FromBody] VerificationCodeDto email)
+        {
             // TODO: need to refactor the code to put the logic in email service
-            
-            var user = await _DbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
 
-            if(user == null) {
-                return BadRequest(new {
+            var user = await _DbContext.Users.FirstOrDefaultAsync(u => u.Email == email.Email);
+
+            if (user == null)
+            {
+                return BadRequest(new
+                {
                     Error = "Email is not registered"
                 });
             }
 
-            if(user.isVerified == true) {
-                return BadRequest(new {
+            if (user.isVerified == true)
+            {
+                return BadRequest(new
+                {
                     Error = "Email is already verified"
                 });
             }
@@ -199,7 +235,8 @@ namespace DiveBuddyFinder.Controllers {
 
             await DeleteAllVerificationCodes(user.Id);
 
-            var VerificationCode = new UserVerification() {
+            var VerificationCode = new UserVerification()
+            {
                 VerificationCode = code,
                 ExpireTime = DateTime.Now.AddMinutes(15),
                 UserId = user.Id
@@ -208,49 +245,60 @@ namespace DiveBuddyFinder.Controllers {
             _DbContext.UserVerifications.Add(VerificationCode);
             await _DbContext.SaveChangesAsync();
 
-            await _EmailService.SendVerificationCode(code, email);
+            await _EmailService.SendVerificationCode(code, email.Email);
 
             return Ok();
         }
 
         [HttpPost("VerifyTheUser/{code}")]
         [Authorize]
-        public async Task<IActionResult> VerifyTheUser([FromRoute] int code) {
+        public async Task<IActionResult> VerifyTheUser([FromRoute] int code)
+        {
             // TODO: need to refactor the code to put the logic in email service
 
             var userClaim = HttpContext.User;
             var userId = userClaim.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
-            if(userId?.Length == 0) {
-                return BadRequest(new {
+            if (userId?.Length == 0)
+            {
+                return BadRequest(new
+                {
                     Error = "Invalid user request"
                 });
             }
 
             var user = await _DbContext.Users.FirstOrDefaultAsync(u => u.Id == Guid.Parse(userId!));
 
-            if(user == null) {
-                return BadRequest(new {
+            if (user == null)
+            {
+                return BadRequest(new
+                {
                     Error = "Invalid token"
                 });
             }
 
-            if(user.isVerified) {
-                return BadRequest(new {
+            if (user.isVerified)
+            {
+                return BadRequest(new
+                {
                     Error = "User is already verified"
                 });
             }
 
             var codeRow = await _DbContext.UserVerifications.FirstOrDefaultAsync(uv => uv.UserId == user.Id);
 
-            if(codeRow?.ExpireTime < DateTime.Now) {
-                return BadRequest(new {
+            if (codeRow?.ExpireTime < DateTime.Now)
+            {
+                return BadRequest(new
+                {
                     Error = "Verification code has expired"
                 });
             }
 
-            if(code != codeRow?.VerificationCode) {
-                return BadRequest(new {
+            if (code != codeRow?.VerificationCode)
+            {
+                return BadRequest(new
+                {
                     Error = "Invalid verification code"
                 });
             }
@@ -264,19 +312,23 @@ namespace DiveBuddyFinder.Controllers {
         }
 
         [HttpPost("ForgotPassword/{email}")]
-        public async Task<IActionResult> ForgotPassword([FromRoute] string email) {
+        public async Task<IActionResult> ForgotPassword([FromRoute] string email)
+        {
 
             var user = await _DbContext.Users.FirstOrDefaultAsync(u => u.Email == email);
 
-            if(user == null) {
-                return BadRequest(new {
+            if (user == null)
+            {
+                return BadRequest(new
+                {
                     Error = "Email is not registered"
                 });
             }
 
             await DeleteAllResetPwdToken(user.Id);
 
-            var pwdReset = new ResetPwd(){
+            var pwdReset = new ResetPwd()
+            {
                 ExpireTime = DateTime.Now.AddMinutes(15),
                 UserId = user.Id
             };
@@ -290,32 +342,39 @@ namespace DiveBuddyFinder.Controllers {
         }
 
         [HttpPost("ResetPassword")]
-        public async Task<IActionResult> ResetPassword([FromBody] ResetPwdRequestDto resetPwdRequestDto) {
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPwdRequestDto resetPwdRequestDto)
+        {
 
             var resetPwd = await _DbContext.ResetPwds.Include(r => r.User).FirstOrDefaultAsync(r => r.Id == resetPwdRequestDto.Token);
 
-            if(resetPwd == null) {
-                return BadRequest(new {
+            if (resetPwd == null)
+            {
+                return BadRequest(new
+                {
                     Error = "Invalid Token"
                 });
             }
 
-            if(resetPwd.used || DateTime.Now > resetPwd.ExpireTime) {
-                return BadRequest(new {
+            if (resetPwd.used || DateTime.Now > resetPwd.ExpireTime)
+            {
+                return BadRequest(new
+                {
                     Error = "Token has been expired"
                 });
             }
 
             var user = resetPwd.User;
 
-            if(user.Password == HashTheString(resetPwdRequestDto.Password)) {
-                return BadRequest(new {
+            if (user.Password == HashTheString(resetPwdRequestDto.Password))
+            {
+                return BadRequest(new
+                {
                     Error = "New password can not be the same as the old password"
                 });
             }
 
             user.Password = HashTheString(resetPwdRequestDto.Password);
-            
+
             await DeleteAllResetPwdToken(user.Id);
             await _DbContext.SaveChangesAsync();
 
@@ -323,16 +382,19 @@ namespace DiveBuddyFinder.Controllers {
         }
 
         [HttpDelete("RevokeRefreshToken/{UserId}")]
-        public async Task<IActionResult> RevokeRefreshToken(Guid UserId) {
+        public async Task<IActionResult> RevokeRefreshToken(Guid UserId)
+        {
 
             Guid id;
             Guid? userId = Guid.TryParse(
                 HttpContext.User
                 .FindFirst(ClaimTypes.NameIdentifier)?
-                .Value,out id) ? id : null;
+                .Value, out id) ? id : null;
 
-            if(userId is null) {
-                return BadRequest(new {
+            if (userId is null)
+            {
+                return BadRequest(new
+                {
                     Error = "UserId is not valid"
                 });
             }
@@ -344,28 +406,55 @@ namespace DiveBuddyFinder.Controllers {
             return Ok();
         }
 
-        private async Task DeleteAllVerificationCodes(Guid UserId) {
+        #region testing
+        [HttpPost("set")]
+        public IActionResult Set()
+        {
+            Response.Cookies.Append("test", "123", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false,
+                SameSite = SameSiteMode.Lax,
+                Path = "/"
+            });
+            return Ok();
+        }
+
+        [HttpPost("get")]
+        public IActionResult Get()
+        {
+            return Ok(Request.Cookies["test"] ?? "NO COOKIE");
+        }
+        #endregion
+
+        private async Task DeleteAllVerificationCodes(Guid UserId)
+        {
             var DeleteCodeList = await _DbContext.UserVerifications.Where(uv => uv.UserId == UserId).ToListAsync();
 
-            if(DeleteCodeList.Any()) {
+            if (DeleteCodeList.Any())
+            {
                 _DbContext.UserVerifications.RemoveRange(DeleteCodeList);
             }
         }
 
-        private async Task DeleteAllResetPwdToken(Guid UserId) {
+        private async Task DeleteAllResetPwdToken(Guid UserId)
+        {
             var deleteResetPwdTokenList = await _DbContext.ResetPwds.Where(r => r.UserId == UserId).ToListAsync();
 
-            if(deleteResetPwdTokenList.Any()) {
+            if (deleteResetPwdTokenList.Any())
+            {
                 _DbContext.ResetPwds.RemoveRange(deleteResetPwdTokenList);
             }
         }
 
-        private string HashTheString(string Password) {
-            
+        private string HashTheString(string Password)
+        {
+
             SHA256 sHA256 = SHA256.Create();
             byte[] hash = sHA256.ComputeHash(Encoding.UTF8.GetBytes(Password));
             StringBuilder stringBuilder = new StringBuilder();
-            foreach(var b in hash) {
+            foreach (var b in hash)
+            {
                 stringBuilder.Append(b.ToString("x2"));
             }
 
@@ -373,21 +462,25 @@ namespace DiveBuddyFinder.Controllers {
 
         }
 
-        private int GenerateVerificationCode() {
+        private int GenerateVerificationCode()
+        {
             return RandomNumberGenerator.GetInt32(100000, 999999);
         }
 
-        private async Task<string> GetRefreshToken(Guid Id) {
+        private async Task<string> GetRefreshToken(Guid Id)
+        {
 
             var RefreshTokenEntity = await _DbContext.RefreshTokens.FirstOrDefaultAsync(r => r.UserId == Id);
 
-            if(RefreshTokenEntity != null) {
+            if (RefreshTokenEntity != null)
+            {
                 _DbContext.RefreshTokens.Remove(RefreshTokenEntity);
             }
 
             var RefreshToken = _JwtSerivce.GenerateRefreshToken();
 
-            RefreshToken refreshToken = new RefreshToken() {
+            RefreshToken refreshToken = new RefreshToken()
+            {
                 Token = RefreshToken,
                 UserId = Id,
                 ExpiresOnUtc = DateTime.UtcNow.AddDays(int.Parse(_Config["Jwt:RefreshTokenTimeInDays"]!))

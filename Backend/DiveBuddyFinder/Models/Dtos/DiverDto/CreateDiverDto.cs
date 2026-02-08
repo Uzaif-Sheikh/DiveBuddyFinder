@@ -4,6 +4,9 @@ using DiveBuddyFinder.Models.Dtos.Views;
 namespace DiveBuddyFinder.Models.Dtos.DiverDto {
     public class CreateDiverDto {
         [Required]
+        public Guid UserId {get; set;}
+
+        [Required]
         public string FirstName {get; set;}
 
         public string? LastName {get; set;}
@@ -19,7 +22,7 @@ namespace DiveBuddyFinder.Models.Dtos.DiverDto {
         public int Age {get; set;}
         [Required]
 
-        public int PostCode {get; set;}
+        public Location Location {get; set;}
         
         public List<Guid> CertificatesId {get; set;}
 

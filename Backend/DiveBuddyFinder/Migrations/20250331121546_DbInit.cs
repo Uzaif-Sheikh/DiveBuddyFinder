@@ -184,6 +184,12 @@ namespace DiveBuddyFinder.Migrations
                     {Guid.NewGuid(), "Open Water Scuba Diving Instructor Or An Equivalent Certification", "PADI", "https://store.padi.com/en-au/ns/courses/open-water-scuba-instructor/p/open-water-scuba-instructor/"},
                     {Guid.NewGuid(), "Master Scuba Diver Trainer Or An Equivalent Certification", "PADI", "https://store.padi.com/en-au/ns/courses/master-scuba-diver-trainer/p/master-scuba-diver-trainer/"},
                     {Guid.NewGuid(), "Not Yet Certified Or Planning to get Certified", "NONE", "https://www.padi.com/courses"},
+                    {Guid.NewGuid(), "Night Diving Specialty Or An Equivalent Certification", "PADI", "https://www.padi.com/courses/night-diver"},
+                    {Guid.NewGuid(), "Wreck Diving Specialty Or An Equivalent Certification", "PADI", "https://www.padi.com/courses/wreck-diver"},
+                    {Guid.NewGuid(), "Deep Diving Specialty Or An Equivalent Certification", "PADI", "https://www.padi.com/courses/deep-diver"},
+                    {Guid.NewGuid(), "Underwater Photography Specialty Or An Equivalent Certification", "PADI", "https://www.padi.com/courses/underwater-photographer"},
+                    {Guid.NewGuid(), "Cave Diving Specialty Or An Equivalent Certification", "PADI", "https://www.padi.com/courses/cave-diver"},
+                    {Guid.NewGuid(), "Tec 50 Or An Equivalent Certification", "PADI", "https://store.padi.com/en-au/ns/courses/tec-50-and-tec-50-trimix/p/tec-50-and-tec-50-trimix/"},
                 });
         }
 
