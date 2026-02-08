@@ -28,3 +28,15 @@
   opacity: 0.9;
   color: #909090;
 }
+
+.header-login-button {
+  border-color: white;
+  color: black;
+  background-color: white !important
+}
+
+.header-user-actions {
+  position: absolute;
+  right: 1rem;
+  top: 1rem;
+}

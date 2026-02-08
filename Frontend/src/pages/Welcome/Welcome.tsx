@@ -1,43 +1,28 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Typography, Box, Button, Input, FormLabel, Textarea, CircularProgress } from '@mui/joy';
 import PageTemplate from '../../components/PageTemplate';
 import { debounce } from '../../utils/debounce';
+import { toBase64 } from '../../utils/toBase64';
 import { addressApi } from '../../api/addressApi';
 import { AddressResult } from '../../api/addressApi';
+import { Certificate } from '../../api/certificateApi';
+import { getCertificateAsync } from '../../store/certificateReducer';
+import { createDiverAsync, DiverState, setDiverState } from '../../store/diverReducer';
+import { AppDispatch, RootState } from '../../store/store';
 import './Welcome.css';
+import { useDispatch, useSelector } from 'react-redux';
 
-// Mock certificate data for the lookup
-const availableCertificates = [
-  { id: 1, name: 'Open Water Diver', organization: 'PADI' },
-  { id: 2, name: 'Advanced Open Water Diver', organization: 'PADI' },
-  { id: 3, name: 'Rescue Diver', organization: 'PADI' },
-  { id: 4, name: 'Divemaster', organization: 'PADI' },
-  { id: 5, name: 'Open Water Diver', organization: 'SSI' },
-  { id: 6, name: 'Advanced Adventurer', organization: 'SSI' },
-  { id: 7, name: 'Rescue Diver', organization: 'SSI' },
-  { id: 8, name: 'Divemaster', organization: 'SSI' },
-  { id: 9, name: 'Night Diving Specialty', organization: 'PADI' },
-  { id: 10, name: 'Deep Diving Specialty', organization: 'PADI' }
-];
 
 const Welcome: React.FC = () => {
   const { id } = useParams<{ id: string}>();
   const navigate = useNavigate();
-
-  const [diverInfo, setDiverInfo] = useState({
-    firstName: '',
-    lastName: '',
-    age: '',
-    totalDives: '',
-    bio: '',
-    image: null
-  });
+  const dispatch = useDispatch<AppDispatch>();
   
+  const imageRef = React.useRef<HTMLInputElement>(null);
+  const diverInfo = useSelector((state: RootState) => state.diver);
   const [suggestedAddress, setSuggestedAddress] = useState<Array<AddressResult>>([]);
-
   const [addressLookup, setAddressLookup] = useState('');
-
   const [address, setAddress] = useState({
     osm_id: 0,
     suburb: '',
@@ -46,21 +31,43 @@ const Welcome: React.FC = () => {
     country: '',
     country_code: ''
   });
-  
   const [certificateSearch, setCertificateSearch] = useState('');
-  const [selectedCertificates, setSelectedCertificates] = useState<Array<{ id: number, name: string, organization: string }>>([]);
-  const [filteredCertificates, setFilteredCertificates] = useState<Array<{ id: number, name: string, organization: string }>>([]);
+  const [selectedCertificates, setSelectedCertificates] = useState<Array<Certificate>>([]);
+  const [filteredCertificates, setFilteredCertificates] = useState<Array<Certificate>>([]);
+  const availableCertificates = useSelector((state: RootState) => state.certificate.certificates);
 
   const handleDiverInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setDiverInfo(prev => ({ ...prev, [name]: value }));
+    dispatch(setDiverState({
+      ...diverInfo,
+      [name]: value
+    }));
   };
+  const [imgFile, setImgFile] = useState<File | null>(null);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setDiverInfo(prev => ({ ...prev, image: null }));
+      const file = e.target.files[0];
+      setImgFile(file);
+      const imgBase64 = file ? await toBase64(file) : null;
+      if(file.type.startsWith('image/')) {
+        dispatch(setDiverState({
+          ...diverInfo,
+          img: imgBase64
+        }));
+      } else {
+        dispatch(setDiverState({
+          ...diverInfo,
+          img: null
+        }));
+        alert('Please select a valid image file');
+      }
     }
   };
+
+  useEffect(() => {
+    dispatch(getCertificateAsync());
+  }, []);
 
   const handleCertificateSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -70,14 +77,13 @@ const Welcome: React.FC = () => {
       setFilteredCertificates([]);
     } else {
       const filtered = availableCertificates.filter(cert => 
-        cert.name.toLowerCase().includes(value.toLowerCase()) || 
-        cert.organization.toLowerCase().includes(value.toLowerCase())
+        cert.name.toLowerCase().includes(value.toLowerCase())
       );
       setFilteredCertificates(filtered);
     }
   };
 
-  const addCertificate = (certificate: { id: number, name: string, organization: string }) => {
+  const addCertificate = (certificate: Certificate) => {
     if (!selectedCertificates.some(cert => cert.id === certificate.id)) {
       setSelectedCertificates(prev => [...prev, certificate]);
     }
@@ -85,20 +91,32 @@ const Welcome: React.FC = () => {
     setFilteredCertificates([]);
   };
 
-  const removeCertificate = (id: number) => {
+  const removeCertificate = (id: string) => {
     setSelectedCertificates(prev => prev.filter(cert => cert.id !== id));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     // Handle form submission
-    console.log({
-      diverInfo,
-      address,
-      selectedCertificates
-    });
-    // Redirect to home page or profile page
-    //navigate('/');
+    
+    const payload: DiverState = {
+      id: id!,
+      firstName: diverInfo.firstName,
+      lastName: diverInfo.lastName,
+      age: diverInfo.age,
+      totalDives: diverInfo.totalDives,
+      bio: diverInfo.bio,
+      img: diverInfo.img,
+      location: {
+        postcode: address.postalCode,
+        suburb: address.suburb,
+        state: address.state,
+        countryCode: address.country_code
+      },
+      certificates: selectedCertificates.map(cert => cert.id)
+    }
+    await dispatch(createDiverAsync(payload));
+    navigate('/');
   };
 
   const selectAddress = (address: AddressResult) => {
@@ -126,7 +144,7 @@ const Welcome: React.FC = () => {
       } else {
         setSuggestedAddress([]);
       }
-    }, 300)
+    }, 500)
     ,
     []
   );
@@ -201,7 +219,15 @@ const Welcome: React.FC = () => {
                   />
                 </Box>
               </Box>
-              
+              { diverInfo.img &&
+              <Box className="form-row">
+                <img 
+                  src={diverInfo.img}
+                  alt="Profile Preview" 
+                  className="profile-preview"
+                />
+              </Box>
+              }
               <Box className="form-group">
                 <FormLabel>Profile Picture</FormLabel>
                 <input
@@ -209,7 +235,26 @@ const Welcome: React.FC = () => {
                   accept="image/*"
                   onChange={handleImageChange}
                   className="file-input"
+                  ref={imageRef}
                 />
+                {imgFile &&
+                <><span className="file-name">{imgFile.name}</span>
+                <button 
+                  type="button" 
+                  className="remove-image-button"
+                  onClick={() => {
+                    dispatch(setDiverState({
+                      ...diverInfo,
+                      img: null
+                    }));
+                    if (imageRef.current) {
+                      imageRef.current.value = '';
+                    }
+                    setImgFile(null);
+                  }}
+                >
+                  X
+                </button></>}
               </Box>
               
               <Box className="form-group">
@@ -220,6 +265,7 @@ const Welcome: React.FC = () => {
                   value={diverInfo.bio}
                   onChange={handleDiverInfoChange}
                   placeholder="Tell others about yourself and your diving experience..."
+                  required
                 />
               </Box>
             </Box>
@@ -232,12 +278,12 @@ const Welcome: React.FC = () => {
               
               <Box className="form-group">
                 <FormLabel>Address</FormLabel>
+                <span className="address-hint">Start typing your suburb, city, and postcode to search</span>
                 <Input
                   name="street"
                   value={addressLookup}
                   onChange={addressOnChange}
                   placeholder='Search your Postcode or City...'
-                  required
                 />
                 {(suggestedAddress.length > 0 || (suggestedAddress.length === 0 && addressLookup.length > 0)) && <Box className="addressLookup-dropdown">
                   {suggestedAddress.length === 0 && <CircularProgress variant="outlined"/>}
@@ -329,7 +375,7 @@ const Welcome: React.FC = () => {
                         className="certificate-option"
                         onClick={() => addCertificate(cert)}
                       >
-                        {cert.name} ({cert.organization})
+                        <span>{cert.name} ({cert.agency})</span>
                       </Box>
                     ))}
                   </Box>
@@ -349,7 +395,10 @@ const Welcome: React.FC = () => {
                   <Box className="certificate-list">
                     {selectedCertificates.map(cert => (
                       <Box key={cert.id} className="certificate-tag">
-                        <span>{cert.name} ({cert.organization})</span>
+                        <div className="certificate-info">
+                          <span>{cert.name} ({cert.agency})</span>
+                          <span className="certificate-url" onClick={() => window.open(cert.url, '_blank')}>[Info]</span>
+                        </div>
                         <button 
                           type="button" 
                           className="remove-certificate"

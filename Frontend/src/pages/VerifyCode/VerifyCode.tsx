@@ -1,48 +1,64 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Typography, Box, Container, Button, Input } from '@mui/joy';
 import PageTemplate from '../../components/PageTemplate';
 import './VerifyCode.css';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store/store';
+import { getVerificationCodeApi } from '../../api/authApi';
 
 const VerifyCode: React.FC = () => {
   const navigate = useNavigate();
+  const isVerifed = useSelector((state: RootState) => state.users.user?.isVerifed);
+  const userEmail = useSelector((state: RootState) => state.users.user?.email);
+  const accessToken = useSelector((state: RootState) => state.users.accessToken);
+
+  if (isVerifed && isVerifed === true) {
+    navigate('/');
+    return null;
+  }
+
+  const [timeleft, setTimeLeft] = useState(60);
   const [verificationCode, setVerificationCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          return 60; // reset
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  useEffect(() => {
+    if (timeleft === 60) {
+      getVerificationCodeApi(userEmail || '', accessToken || '');
+    }
+  }, [timeleft]);
 
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setVerificationCode(e.target.value);
     if (error) setError('');
   };
 
-  const handleResendCode = () => {
-    // Logic to resend verification code
-    alert('A new verification code has been sent to your email.');
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!verificationCode.trim()) {
       setError('Please enter the verification code');
       return;
     }
+
     
     setIsSubmitting(true);
     setError('');
-    
-    // Simulate API call for verification
-    setTimeout(() => {
-      setIsSubmitting(false);
-      
-      // For demo purposes, any 6-digit code is considered valid
-      if (/^\d{6}$/.test(verificationCode)) {
-        // Redirect to welcome page on success
-        navigate('/welcome');
-      } else {
-        setError('Invalid verification code. Please try again.');
-      }
-    }, 1500);
+
   };
 
   return (
@@ -52,12 +68,12 @@ const VerifyCode: React.FC = () => {
           <Typography level="h3" className="verify-title">
             Verify Your Account
           </Typography>
-          
+
           <Typography className="verify-subtitle">
             We've sent a 6-digit verification code to your email.
             Please enter it below to complete your registration.
           </Typography>
-          
+
           <form onSubmit={handleSubmit} className="verify-form">
             <Box className="code-input-container">
               <Input
@@ -70,35 +86,28 @@ const VerifyCode: React.FC = () => {
                 error={!!error}
               />
             </Box>
-            
+
             {error && (
               <Typography className="error-message">
                 {error}
               </Typography>
             )}
-            
-            <Button 
-              type="submit" 
-              size="lg" 
+
+            <Button
+              type="submit"
+              size="lg"
               className="verify-button"
               loading={isSubmitting}
               disabled={isSubmitting}
             >
               Verify
             </Button>
-            
+
             <Box className="resend-container">
-              <Typography>
-                Didn't receive the code?
+              <Typography className="timer">
+                {`Resend code in`}
+                <span className='timerSec'>{` ${timeleft}s`}</span>
               </Typography>
-              <Button 
-                onClick={handleResendCode} 
-                variant="plain" 
-                size="sm"
-                disabled={isSubmitting}
-              >
-                Resend Code
-              </Button>
             </Box>
           </form>
         </Box>

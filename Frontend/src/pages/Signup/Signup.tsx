@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Alert, Box, CircularProgress, Container, Input, Button } from '@mui/joy';
 import PageTemplate from '../../components/PageTemplate';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { resigterUserAsync } from '../../store/UserReducer';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../../store/store';
 import './Signup.css';
-import { registerApi } from '../../api/authApi';
 
 const Signup: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -11,9 +13,10 @@ const Signup: React.FC = () => {
     password: '',
     confirmPassword: ''
   });
-
+  const dispatch = useDispatch<AppDispatch>();
   const [error, setError] = useState<string>('');
   const [processing, setProcessing] = useState<boolean>(false);
+  const navigator = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -28,13 +31,14 @@ const Signup: React.FC = () => {
     // Handle signup logic here
     try {
       setProcessing(true);
-      const res = await registerApi({'email': formData.email, 'password': formData.password});
-      
-      if(!res.ok) {
-        setError(String(res.error));
-      }
+      const res = await dispatch(resigterUserAsync({ email: formData.email, password: formData.password }));
 
-      console.log(res);
+      if (res.payload && typeof res.payload === 'object' && ('isVerified' in res.payload)) {
+        navigator('/verify-code');
+      }
+      if (res.payload && typeof res.payload === 'object' && 'error' in res.payload) {
+        setError(res.payload.error as string);
+      }
 
     } catch (error) {
       setError(String(error));
@@ -46,7 +50,6 @@ const Signup: React.FC = () => {
       confirmPassword: '',
       password: ''
     }));
-    console.log('Signup attempt with:', formData);
   };
 
   return (
@@ -99,7 +102,7 @@ const Signup: React.FC = () => {
               processing && <div className='circular-progress'><CircularProgress variant="soft" /></div>
             }
 
-            <Button type="submit" className="signup-button">
+            <Button type="submit" className="signup-button" disabled={formData.password !== formData.confirmPassword}>
               Sign Up
             </Button>
 

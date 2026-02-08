@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { Typography, Box, Container, Button, Input } from '@mui/joy';
 import PageTemplate from '../../components/PageTemplate';
 import './ForgotPassword.css';
+import { useParams } from 'react-router-dom';
 
 const ForgotPassword: React.FC = () => {
+  const { token } = useParams();
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);

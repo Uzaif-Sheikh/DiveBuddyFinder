@@ -8,6 +8,11 @@
   max-width: 450px;
 }
 
+.timerSec {
+  color: #1a56db;
+  font-weight: 600;
+}
+
 .verify-title {
   color: #1a56db;
   margin-bottom: 1rem !important;
